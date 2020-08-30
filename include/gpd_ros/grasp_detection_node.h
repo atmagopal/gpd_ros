@@ -51,6 +51,7 @@
 #include <pcl/point_types.h>
 
 // GPD
+#include <gpd/util/config_file.h>
 #include <gpd/util/cloud.h>
 #include <gpd/grasp_detector.h>
 #include <gpd/sequential_importance_sampling.h>
