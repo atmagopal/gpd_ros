@@ -24,6 +24,9 @@ add_definitions(${PCL_DEFINITIONS})
 
 # OpenCV
 find_package(OpenCV 3.2 REQUIRED)
+include_directories(${OpenCV_INCLUDE_DIRS})
+link_directories(${OpenCV_LIBRARY_DIRS})
+add_definitions(${OpenCV_DEFINITIONS})
 
 ## System dependencies are found with CMake's conventions
 find_library(GPD_LIB NAMES gpd PATHS /usr/local/lib PATH_SUFFIXES lib NO_DEFAULT_PATH)
@@ -44,7 +47,7 @@ add_message_files(FILES CloudIndexed.msg CloudSamples.msg CloudSources.msg Grasp
   SamplesMsg.msg)
 
 ## Generate services in the 'srv' folder
-add_service_files(FILES detect_grasps.srv)
+add_service_files(FILES detect_grasps.srv detect_params.srv)
 
 ## Generate dynamic_reconfigure header
 generate_dynamic_reconfigure_options(
@@ -90,14 +93,14 @@ add_library(${PROJECT_NAME}_grasp_plotter src/${PROJECT_NAME}/grasp_plotter.cpp)
 add_executable(${PROJECT_NAME}_detect_grasps src/gpd_ros/grasp_detection_node.cpp)
 add_executable(${PROJECT_NAME}_detect_grasps_server src/gpd_ros/grasp_detection_server.cpp)
 
-add_executable(${PROJECT_NAME}_detect_grasp_test src/gpd_ros/detectGrasps_ext_param.cpp)
-add_dependencies(${PROJECT_NAME}_detect_grasp_test ${PROJECT_NAME}_gencfg)
+#add_executable(${PROJECT_NAME}_detect_grasp_test src/gpd_ros/detectGrasps_ext_param.cpp)
+#add_dependencies(${PROJECT_NAME}_detect_grasp_test ${PROJECT_NAME}_gencfg)
 
 
 ## Rename C++ executable without prefix
 set_target_properties(${PROJECT_NAME}_detect_grasps PROPERTIES OUTPUT_NAME detect_grasps PREFIX "")
 set_target_properties(${PROJECT_NAME}_detect_grasps_server PROPERTIES OUTPUT_NAME detect_grasps_server PREFIX "")
-set_target_properties(${PROJECT_NAME}_detect_grasp_test PROPERTIES OUTPUT_NAME detect_grasp_test PREFIX "")
+#set_target_properties(${PROJECT_NAME}_detect_grasp_test PROPERTIES OUTPUT_NAME detect_grasp_test PREFIX "")
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_detect_grasps
@@ -118,8 +121,8 @@ target_link_libraries(${PROJECT_NAME}_grasp_plotter
 target_link_libraries(${PROJECT_NAME}_grasp_messages
                       ${GPD_LIB}
                       ${catkin_LIBRARIES})
-target_link_libraries(${PROJECT_NAME}_detect_grasp_test
-                      ${PROJECT_NAME}_grasp_plotter
-                      ${GPD_LIB}
-                      ${PCL_LIBRARIES}
-                      ${catkin_LIBRARIES})
+#target_link_libraries(${PROJECT_NAME}_detect_grasp_test
+#                     ${PROJECT_NAME}_grasp_plotter
+#                      ${GPD_LIB}
+#                      ${PCL_LIBRARIES}
+#                      ${catkin_LIBRARIES})

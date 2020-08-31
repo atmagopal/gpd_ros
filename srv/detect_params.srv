@@ -1,0 +1,11 @@
+# frame_id - frame of the given points and approach approach_direction
+# three_workspace_points - left, right, rear_right
+# approach_direction - 'top', 'side_r', 'side_l', 'front'
+# tolerance_direction - tolerance angle in degrees
+
+std_msgs/String frame_id
+geometry_msgs/Point[]  three_workspace_points
+std_msgs/String  approach_direction 
+std_msgs/UInt8 tolerance_direction  
+---
+std_msgs/Bool status
