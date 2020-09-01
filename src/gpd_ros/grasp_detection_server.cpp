@@ -20,7 +20,7 @@ GraspDetectionServer::GraspDetectionServer(ros::NodeHandle& node)
 
 	// Frames
 	base_frame_ = "base";
-	grasp_detection_frame_ = "camera_optical_depth_frame";
+	grasp_detection_frame_ = "camera_depth_optical_frame";
 
 	std::cout<<"Server initializing."<<std::endl;
 
@@ -58,7 +58,7 @@ GraspDetectionServer::GraspDetectionServer(ros::NodeHandle& node)
 bool GraspDetectionServer::setGPDParams(gpd_ros::detect_params::Request& req, gpd_ros::detect_params::Response& res)
 {
 	/** Workspace **/
-	if(req.three_workspace_points.size() == 3)
+	if(req.three_workspace_points.size() != 3)
 	{
 		ROS_WARN("3 points needed to define the workspace.");
 		res.status = false;
@@ -252,6 +252,8 @@ void GraspDetectionServer::visualizeWorkspace(const std::vector<geometry_msgs::P
 		ws_cube.id                   = eMarkerID::BASE_USER;
 		ws_cube.type                 = visualization_msgs::Marker::LINE_STRIP;
 		ws_cube.scale.x              = 0.02;
+		ws_cube.scale.y              = 0.02;
+		ws_cube.scale.z              = 0.02;
 		ws_cube.color.r              = 1.0;
 		ws_cube.color.a              = 0.6;
 		ws_cube.lifetime             = ros::Duration();
