@@ -3,9 +3,9 @@
 # approach_direction - 'top', 'side_r', 'side_l', 'front'
 # tolerance_direction - tolerance angle in degrees
 
-std_msgs/String frame_id
+string frame_id
 geometry_msgs/Point[]  three_workspace_points
-std_msgs/String  approach_direction 
-std_msgs/UInt8 tolerance_direction  
+string  approach_direction 
+uint8 tolerance_direction  
 ---
-std_msgs/Bool status
+bool status

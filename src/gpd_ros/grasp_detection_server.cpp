@@ -7,9 +7,9 @@ GraspDetectionServer::GraspDetectionServer(ros::NodeHandle& node)
 	cloud_camera_ = NULL;
 
 	// set camera viewpoint to default origin
-	std::vector<double> camera_position;
-	node.getParam("camera_position", camera_position);
-	view_point_ << camera_position[0], camera_position[1], camera_position[2];
+	// std::vector<double> camera_position;
+	// node.getParam("camera_position", camera_position);
+	// view_point_ << camera_position[0], camera_position[1], camera_position[2];
 
 	std::string cfg_file;
 	node.param("config_file", cfg_file, std::string(""));
@@ -21,6 +21,8 @@ GraspDetectionServer::GraspDetectionServer(ros::NodeHandle& node)
 	// Frames
 	base_frame_ = "base";
 	grasp_detection_frame_ = "camera_optical_depth_frame";
+
+	std::cout<<"Server initializing."<<std::endl;
 
 	// Approach direction map
 	std::vector<double>top		{0.0, 0.0,-1.0};
@@ -45,10 +47,12 @@ GraspDetectionServer::GraspDetectionServer(ros::NodeHandle& node)
 	}
 
 	// Advertise ROS topic for detected grasps.
-	grasps_pub_ 		= node.advertise<gpd_ros::GraspConfigList>("clustered_grasps", 10);
+	grasps_pub_ 	= node.advertise<gpd_ros::GraspConfigList>("clustered_grasps", 10);
 	workspace_pub_  = node.advertise<visualization_msgs::Marker>("visualize_workspace", 1);
 
 	node.getParam("workspace", workspace_);
+
+	std::cout<<"Server initialized."<<std::endl;
 }
 
 bool GraspDetectionServer::setGPDParams(gpd_ros::detect_params::Request& req, gpd_ros::detect_params::Response& res)
@@ -57,8 +61,8 @@ bool GraspDetectionServer::setGPDParams(gpd_ros::detect_params::Request& req, gp
 	if(req.three_workspace_points.size() == 3)
 	{
 		ROS_WARN("3 points needed to define the workspace.");
-		res.status.data = false;
-		return res.status.data;
+		res.status = false;
+		return res.status;
 	}
 	// Assign the 8 vertices that make up the workspace
 	workspace_points_.clear();
@@ -79,22 +83,22 @@ bool GraspDetectionServer::setGPDParams(gpd_ros::detect_params::Request& req, gp
 
 
 	/** Approach direction **/
-	transformApproachDirection_base2camera(myParam_.approach_direction, direction_map_[req.approach_direction.data]);
+	transformApproachDirection_base2camera(myParam_.approach_direction, direction_map_[req.approach_direction]);
 
 
 	/** Direction Angle Threshold **/
-	myParam_.thresh_rad = (req.tolerance_direction.data * M_PI) / 180.0;
+	myParam_.thresh_rad = (req.tolerance_direction * M_PI) / 180.0;
 
 
 	/** Base Frame ID **/
-	base_frame_ = req.frame_id.data;
+	base_frame_ = req.frame_id;
 
 
 	/** Transform Camera2Base **/
 	getEigenTransform_(myParam_.transform_camera2base, grasp_detection_frame_, WORKSPACE_TABLE_FRAME);
 
-	res.status.data = true;
-	return res.status.data;
+	res.status = true;
+	return res.status;
 }
 
 bool GraspDetectionServer::detectGrasps(gpd_ros::detect_grasps::Request& req, gpd_ros::detect_grasps::Response& res)
