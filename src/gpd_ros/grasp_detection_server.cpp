@@ -19,7 +19,7 @@ GraspDetectionServer::GraspDetectionServer(ros::NodeHandle& node)
 	node.param("rviz_topic", rviz_topic, std::string(""));
 
 	// Frames
-	base_frame_ = "base";
+	base_frame_ = "right_arm_base_link";
 	grasp_detection_frame_ = "camera_depth_optical_frame";
 
 	std::cout<<"Server initializing."<<std::endl;
@@ -57,6 +57,8 @@ GraspDetectionServer::GraspDetectionServer(ros::NodeHandle& node)
 
 bool GraspDetectionServer::setGPDParams(gpd_ros::detect_params::Request& req, gpd_ros::detect_params::Response& res)
 {
+	ROS_INFO("Request received. Setting GPD Parameters ...");
+	
 	/** Workspace **/
 	if(req.three_workspace_points.size() != 3)
 	{
@@ -81,21 +83,25 @@ bool GraspDetectionServer::setGPDParams(gpd_ros::detect_params::Request& req, gp
 	std::vector<geometry_msgs::Point> dummy;
 	visualizeWorkspace(dummy, eMarkerID::WORKSPACE_TABLE_GPD);
 
-
 	/** Approach direction **/
 	transformApproachDirection_base2camera(myParam_.approach_direction, direction_map_[req.approach_direction]);
-
 
 	/** Direction Angle Threshold **/
 	myParam_.thresh_rad = (req.tolerance_direction * M_PI) / 180.0;
 
+	Eigen::Matrix3Xd camera_position_default(3, 1);
+	camera_position_default.setZero();
+
+	myParam_.camera_position     = camera_position_default;
+	myParam_.thresh_rad          = 0.79;
+	myParam_.can_filter_approach = true; 
 
 	/** Base Frame ID **/
 	base_frame_ = req.frame_id;
 
-
 	/** Transform Camera2Base **/
 	getEigenTransform_(myParam_.transform_camera2base, grasp_detection_frame_, WORKSPACE_TABLE_FRAME);
+	std::cout<<"GPD parameters set."<<std::endl;
 
 	res.status = true;
 	return res.status;
@@ -108,7 +114,7 @@ bool GraspDetectionServer::detectGrasps(gpd_ros::detect_grasps::Request& req, gp
 	// 1. Initialize cloud camera.
 	cloud_camera_ = NULL;
 	const gpd_ros::CloudSources& cloud_sources = req.cloud_indexed.cloud_sources;
-
+	/*
 	// Set view points.
 	Eigen::Matrix3Xd view_points(3, cloud_sources.view_points.size());
 	for (int i = 0; i < cloud_sources.view_points.size(); i++)
@@ -147,10 +153,25 @@ bool GraspDetectionServer::detectGrasps(gpd_ros::detect_grasps::Request& req, gp
 
 		cloud_camera_ = new gpd::util::Cloud(cloud, camera_source, view_points);
 		std::cout << "view_points:\n" << view_points << "\n";
-	}
+	} */
+
+	PointCloudRGBA::Ptr cloud(new PointCloudRGBA);
+	pcl::fromROSMsg(cloud_sources.cloud, *cloud);
+
+	// TODO: multiple cameras can see the same point
+	/* Eigen::MatrixXi camera_source = Eigen::MatrixXi::Zero(view_points.cols(), cloud->size());
+	for (int i = 0; i < cloud_sources.camera_source.size(); i++)
+	{
+		camera_source(cloud_sources.camera_source[i].data, i) = 1;
+	} */
+
+	cloud_camera_ = new gpd::util::Cloud(cloud, 0, myParam_.camera_position);
+	ROS_INFO_STREAM("Received cloud with " << cloud_camera_->getCloudProcessed()->size() << " points.");
 
 	grasp_detector_->preprocessPointCloud(*cloud_camera_, myParam_.workspace, myParam_.transform_camera2base);
 	std::vector<std::unique_ptr<gpd::candidate::Hand>> grasps = grasp_detector_->detectGrasps(*cloud_camera_, myParam_);
+
+	std::cout<<"Completed processing and grasp detection."<<std::endl;
 
 
 /* 	// Set the indices at which to sample grasp candidates.
@@ -171,6 +192,8 @@ bool GraspDetectionServer::detectGrasps(gpd_ros::detect_grasps::Request& req, gp
 
 	// 3. Detect grasps in the point cloud.
 	std::vector<std::unique_ptr<gpd::candidate::Hand>> grasps = grasp_detector_->detectGrasps(*cloud_camera_); */
+
+	frame_ = req.cloud_indexed.cloud_sources.cloud.header.frame_id;
 
 	if (grasps.size() > 0)
 	{

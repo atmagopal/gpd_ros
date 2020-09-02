@@ -28,6 +28,12 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 link_directories(${OpenCV_LIBRARY_DIRS})
 add_definitions(${OpenCV_DEFINITIONS})
 
+# Eigen
+find_package(Eigen3 REQUIRED)
+include_directories(${Eigen3_INCLUDE_DIRS})
+link_directories(${Eigen3_LIBRARY_DIRS})
+add_definitions(${Eigen3_DEFINITIONS})
+
 ## System dependencies are found with CMake's conventions
 find_library(GPD_LIB NAMES gpd PATHS /usr/local/lib PATH_SUFFIXES lib NO_DEFAULT_PATH)
 if (GPD_LIB)
@@ -40,7 +46,7 @@ message(STATUS "gpd_include_dir: ${GPD_LIB_INCLUDE_DIR}")
 
 # Remove -O3 flag when using Ubuntu 18 - as of 24.04.2020
 # set(CMAKE_CXX_FLAGS "-O3 -fopenmp -fPIC -Wno-deprecated -Wenum-compare -Wno-ignored-attributes -std=c++14")
-set(CMAKE_CXX_FLAGS "-fopenmp -fPIC -Wno-deprecated -Wenum-compare -Wno-ignored-attributes -std=c++14")
+set(CMAKE_CXX_FLAGS "-O3 -fopenmp -fPIC -Wno-deprecated -Wenum-compare -Wno-ignored-attributes -std=c++14")
 
 ## Generate messages in the 'msg' folder
 add_message_files(FILES CloudIndexed.msg CloudSamples.msg CloudSources.msg GraspConfig.msg GraspConfigList.msg
