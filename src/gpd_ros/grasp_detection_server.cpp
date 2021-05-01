@@ -93,7 +93,6 @@ bool GraspDetectionServer::setGPDParams(gpd_ros::detect_params::Request& req, gp
 	camera_position_default.setZero();
 
 	myParam_.camera_position     = camera_position_default;
-	myParam_.thresh_rad          = 0.79;
 	myParam_.can_filter_approach = true; 
 
 	/** Base Frame ID **/
@@ -249,9 +248,9 @@ void GraspDetectionServer::publishTransform_base2workspace_base(const std::vecto
 	static_transformStamped.header.stamp            = ros::Time::now();
 	static_transformStamped.header.frame_id         = base_frame_;
 	static_transformStamped.child_frame_id          = WORKSPACE_TABLE_FRAME;
-	static_transformStamped.transform.translation.x = 0;
-	static_transformStamped.transform.translation.y = 0;
-	static_transformStamped.transform.translation.z = 0;
+	static_transformStamped.transform.translation.x = workspace_vertices[0].x;
+	static_transformStamped.transform.translation.y = workspace_vertices[0].y;
+	static_transformStamped.transform.translation.z = workspace_vertices[0].z;
 	static_transformStamped.transform.rotation      = q;
 	
 	static_workspacetf_broadcaster_.sendTransform(static_transformStamped); 
